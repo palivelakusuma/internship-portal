@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Internship Application</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Amaanitvam Internship Portal</h2>
+
+  <form id="form" enctype="multipart/form-data">
+
+    <input id="name" placeholder="Name" required>
+    <input id="email" placeholder="Email" required>
+    <input id="skills" placeholder="Skills" required>
+
+    <input type="file" id="resume" accept=".pdf" required>
+
+    <button type="submit">Apply</button>
+
+  </form>
+  <!-- ✅ FORM ENDS HERE -->
+
+</div>
+
+<script>
+document.getElementById("form").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const formData = new FormData();
+
+  formData.append("name", document.getElementById("name").value);
+  formData.append("email", document.getElementById("email").value);
+  formData.append("skills", document.getElementById("skills").value);
+
+  const file = document.getElementById("resume").files[0];
+
+  if (!file) {
+    alert("Please upload resume");
+    return;
+  }
+
+  formData.append("resume", file);
+
+  try {
+    await fetch("http://localhost:5000/applications", {
+      method: "POST",
+      body: formData
+    });
+
+    alert("Application Submitted Successfully!");
+    document.getElementById("form").reset(); // clear form
+  } catch (err) {
+    console.log(err);
+    alert("Error submitting form");
+  }
+});
+</script>
+
+</body>
+</html>

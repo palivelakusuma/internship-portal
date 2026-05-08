@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f9;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input, select, button {
+      padding: 8px;
+      margin: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+    }
+
+    .status-pending { color: orange; }
+    .status-selected { color: green; }
+    .status-rejected { color: red; }
+
+    .btn {
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .select-btn { background: green; color: white; }
+    .reject-btn { background: red; color: white; }
+
+    /* 🔥 Spinner */
+    #spinner {
+      display: none;
+      text-align: center;
+      margin: 20px;
+      font-weight: bold;
+    }
+
+    /* 🔥 Popup */
+    #popup {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: green;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Amaanitvam Internship Portal - Admin</h2>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search name or email">
+
+  <select id="filter">
+    <option value="All">All</option>
+    <option value="Pending">Pending</option>
+    <option value="Selected">Selected</option>
+    <option value="Rejected">Rejected</option>
+  </select>
+
+  <button onclick="load()">Search</button>
+</div>
+
+<!-- 🔥 Spinner -->
+<div id="spinner">Loading...</div>
+
+<!-- 🔥 Popup -->
+<div id="popup">Status Updated!</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Skills</th>
+      <th>Resume</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody id="data"></tbody>
+</table>
+
+<script>
+async function load() {
+
+  document.getElementById("spinner").style.display = "block";
+
+  let search = document.getElementById("search").value;
+  let filter = document.getElementById("filter").value;
+
+  let url = `http://localhost:5000/applications?search=${search}&status=${filter}`;
+
+  let res = await fetch(url);
+  let data = await res.json();
+
+  document.getElementById("spinner").style.display = "none";
+
+  if(data.length === 0){
+    document.getElementById("data").innerHTML =
+      "<tr><td colspan='6'>No Applications Found</td></tr>";
+    return;
+  }
+
+  document.getElementById("data").innerHTML =
+    data.map(d => `
+      <tr>
+        <td>${d.name}</td>
+        <td>${d.email}</td>
+        <td>${d.skills}</td>
+
+        <td>
+          ${d.resume ? `<a href="http://localhost:5000/uploads/${d.resume}" target="_blank">View</a>` : "No File"}
+        </td>
+
+        <td class="status-${d.status.toLowerCase()}">
+          ${d.status}
+        </td>
+
+        <td>
+          <button class="btn select-btn" onclick="updateStatus('${d._id}','Selected')">Select</button>
+          <button class="btn reject-btn" onclick="updateStatus('${d._id}','Rejected')">Reject</button>
+        </td>
+      </tr>
+    `).join("");
+}
+
+async function updateStatus(id, status) {
+
+  document.getElementById("spinner").style.display = "block";
+
+  await fetch(`http://localhost:5000/applications/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status })
+  });
+
+  document.getElementById("spinner").style.display = "none";
+
+  // 🔥 Show popup
+  let popup = document.getElementById("popup");
+  popup.style.display = "block";
+
+  setTimeout(() => {
+    popup.style.display = "none";
+  }, 2000);
+
+  load();
+}
+
+// Auto load
+load();
+</script>
+
+</body>
+</html>
