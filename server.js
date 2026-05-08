@@ -38,7 +38,7 @@ const applicationSchema = new mongoose.Schema({
 
 const Application = mongoose.model("Application", applicationSchema);
 
-// CREATE (with resume upload)
+// CREATE 
 app.post("/applications", upload.single("resume"), async (req, res) => {
   console.log("BODY:", req.body);
   console.log("FILE:", req.file);
