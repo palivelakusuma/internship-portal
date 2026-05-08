@@ -31,8 +31,8 @@
     }
 
     th, td {
-      border: 1px solid #ddd;
       padding: 10px;
+      border: 1px solid #ddd;
       text-align: center;
     }
 
@@ -54,11 +54,12 @@
 
     .select-btn { background: green; color: white; }
     .reject-btn { background: red; color: white; }
+    .delete-btn { background: black; color: white; }
 
     #spinner {
       display: none;
       text-align: center;
-      margin: 20px;
+      margin: 15px;
       font-weight: bold;
     }
 
@@ -80,7 +81,7 @@
 <h2>Amaanitvam Internship Portal - Admin</h2>
 
 <div class="controls">
-  <input type="text" id="search" placeholder="Search name or email">
+  <input type="text" id="search" placeholder="Search name/email">
 
   <select id="filter">
     <option value="All">All</option>
@@ -93,8 +94,7 @@
 </div>
 
 <div id="spinner">Loading...</div>
-
-<div id="popup">Status Updated!</div>
+<div id="popup">Action Successful!</div>
 
 <table>
   <thead>
@@ -119,9 +119,7 @@ async function load() {
   let search = document.getElementById("search").value;
   let filter = document.getElementById("filter").value;
 
-  let url = `http://localhost:5000/applications?search=${search}&status=${filter}`;
-
-  let res = await fetch(url);
+  let res = await fetch(`http://localhost:5000/applications?search=${search}&status=${filter}`);
   let data = await res.json();
 
   document.getElementById("spinner").style.display = "none";
@@ -150,6 +148,7 @@ async function load() {
         <td>
           <button class="btn select-btn" onclick="updateStatus('${d._id}','Selected')">Select</button>
           <button class="btn reject-btn" onclick="updateStatus('${d._id}','Rejected')">Reject</button>
+          <button class="btn delete-btn" onclick="deleteApp('${d._id}')">Delete</button>
         </td>
       </tr>
     `).join("");
@@ -165,16 +164,32 @@ async function updateStatus(id, status) {
     body: JSON.stringify({ status })
   });
 
-  document.getElementById("spinner").style.display = "none";
+  showPopup("Status Updated!");
+  load();
+}
 
+async function deleteApp(id) {
+
+  if(!confirm("Delete this application?")) return;
+
+  document.getElementById("spinner").style.display = "block";
+
+  await fetch(`http://localhost:5000/applications/${id}`, {
+    method: "DELETE"
+  });
+
+  showPopup("Deleted Successfully!");
+  load();
+}
+
+function showPopup(message){
   let popup = document.getElementById("popup");
+  popup.innerText = message;
   popup.style.display = "block";
 
   setTimeout(() => {
     popup.style.display = "none";
   }, 2000);
-
-  load();
 }
 
 // Auto load
